@@ -133,3 +133,4 @@ _G.stat_kill_signal = function()
     _G.stat_kill_signal = nil
     getgenv().stat_settings = nil 
 end
+-- hello
