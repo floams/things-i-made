@@ -21,6 +21,31 @@ player.CharacterAdded:Connect(function(newCharacter)
 	humanoid = character:WaitForChild("Humanoid")
 end)
 
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AlljumpCounterGui"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = playerGui
+
+local counterLabel = Instance.new("TextLabel")
+counterLabel.Size = UDim2.new(0, 60, 0, 40)
+counterLabel.Position = UDim2.new(1, -70, 0, 10)
+counterLabel.BackgroundTransparency = 1
+counterLabel.Text = "0"
+counterLabel.TextColor3 = Color3.new(1, 1, 1)
+counterLabel.TextStrokeTransparency = 0
+counterLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+counterLabel.Font = Enum.Font.SourceSansBold
+counterLabel.TextSize = 28
+counterLabel.TextXAlignment = Enum.TextXAlignment.Right
+counterLabel.Parent = screenGui
+
+local function updateCounter()
+	counterLabel.Text = tostring(#alljump.checkpoints)
+end
+
 local function getTorsoSizeAndCFrame()
 	if not character or not hrp then return Vector3.new(2, 2, 1), CFrame.new() end
 
@@ -66,7 +91,7 @@ function alljump.saveCheckpoint()
 		visual = part
 	})
 
-	print("[alljump] saved checkpoint #" .. #alljump.checkpoints)
+	updateCounter()
 end
 
 function alljump.removeCheckpoint()
@@ -75,9 +100,7 @@ function alljump.removeCheckpoint()
 		if lastCheckpoint.visual then
 			lastCheckpoint.visual:Destroy()
 		end
-		print("[alljump] removed last checkpoint. remaining: " .. #alljump.checkpoints)
-	else
-		print("[alljump] no checkpoints to remove")
+		updateCounter()
 	end
 end
 
@@ -93,19 +116,14 @@ function alljump.gotoCheckpoint(idx)
 	hrp.CFrame = target.position
 	humanoid:ChangeState(target.state)
 	hrp.AssemblyLinearVelocity = target.velocity
-
-	print("[alljump] teleported to checkpoint #" .. idx .. " / " .. #alljump.checkpoints)
-end
-
-function alljump.listCheckpoints()
-	print("[alljump] you have " .. #alljump.checkpoints .. " checkpoint(s)")
-	for i, cp in ipairs(alljump.checkpoints) do
-		local pos = cp.position.Position
-		print(string.format("  [%d] %.1f, %.1f, %.1f", i, pos.X, pos.Y, pos.Z))
-	end
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if input.KeyCode == Enum.KeyCode.RightAlt then
+		counterLabel.Visible = not counterLabel.Visible
+		return
+	end
+
 	if gameProcessed then return end
 
 	if input.KeyCode == Enum.KeyCode[alljump.savecheckpoint] then
@@ -117,6 +135,9 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	end
 end)
 
+updateCounter()
+
 print("[alljump] loaded. F=save, V=remove, R=goto")
-print("[alljump] alljump.listCheckpoints() -> list all")
-print("[alljump] alljump.gotoCheckpoint(index) -> teleport to specific")
+print("[alljump] alt = toggle checkpoint count")
+
+-- hello
